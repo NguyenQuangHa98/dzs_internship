@@ -56,7 +56,7 @@ void function_compare(char from_key,char from_view )
 		counter++;	
 	}
 	else
-	{
-		counter--;
+	}
+		if(counter > 0) counter--;
 	}
 }
