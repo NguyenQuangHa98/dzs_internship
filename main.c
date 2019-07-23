@@ -21,6 +21,11 @@ int main()
 
 	while(1)
 	{
+		if(counter == 30)
+		{
+			pthread_exit(NULL);
+			return 0;
+		}
 		/* print 9 empty boxes */
 		system("clear");
 		evil_pos = 0;
@@ -68,9 +73,16 @@ int main()
 		free(file_name);
 		free(buff);
 		fclose(fp);
-	
-		// sleep(1);
-		usleep(500000);
+
+		// time of sleep based on scores that player achieved
+		if(counter < 5)
+			usleep(2000000);
+		else if(counter < 10)
+			usleep(1500000);
+		else if(counter < 20)
+			usleep(1000000);
+		else
+			usleep(500000);
 	}
 	return 0;
 }
