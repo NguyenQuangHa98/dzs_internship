@@ -1,6 +1,7 @@
 #include "thread_get_key.h"
 
 //VAR_GET_C *p_get_c = NULL;
+extern int dead_time;
 extern int counter;
 extern char evil_pos;
 void function_compare(char from_key,char from_view );
@@ -33,7 +34,7 @@ void *thread_keyboard(void *arg)
 	//p_get_c = VGC_get_var_c();
 
 	/*create the thread to count */
-	while(1)
+	while(0 != dead_time)
 	{
 		c = getchar();
 		if(c >=  '1' && c <= '9')
@@ -45,18 +46,13 @@ void *thread_keyboard(void *arg)
 
     /*restore the old settings*/
     tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
-
-    return 0;
+	return NULL;
 }
 
 void function_compare(char from_key,char from_view )
 {
 	if(from_key == from_view)
-	{
 		counter++;	
-	}
-	else
-	}
-		if(counter > 0) counter--;
-	}
+	else if(counter > 0)
+		counter--;
 }
