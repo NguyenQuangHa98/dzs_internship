@@ -7,7 +7,6 @@
 
 #include "thread_get_key.h"
 
-
 char evil_pos;
 int counter = 0;
 int main()
