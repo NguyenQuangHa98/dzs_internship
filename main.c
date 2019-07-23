@@ -2,30 +2,41 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h> // for random()
+#include <time.h>
 #include <pthread.h>
 
 #include "thread_get_key.h"
+
+int dead_time = 1;
 
 char evil_pos;
 int counter = 0;
 int main()
 {
 	int map[10], random_pos;
-	char temp[2];
 	char *file_name, *buff;
 	FILE *fp;
-	// create new thread to get key typed by player
+	time_t begin_time;
+	// double elapsed_time;
+
+	/* create new thread to get key typed by player */
 	pthread_t keyboard;
 	pthread_create(&keyboard, NULL, thread_keyboard, NULL);
 
+	/* starting timer */
+	begin_time = time(NULL);
+
 	while(1)
 	{
-		if(counter == 30)
+		/* calculate elapsed time */
+		// elapsed_time = difftime(time(NULL), begin_time);
+		if(difftime(time(NULL), begin_time) >= 60)
 		{
+			// print something...
+			dead_time = 0;
 			pthread_exit(NULL);
-			return 0;
 		}
+		
 		/* print 9 empty boxes */
 		system("clear");
 		evil_pos = 0;
@@ -36,6 +47,7 @@ int main()
 		printf("%s", buff);
 
 		printf("\n%d\n", counter);
+		printf("%d\n", 60 - (int)difftime(time(NULL), begin_time));
 
 		free(buff);
 		fclose(fp);	
@@ -52,10 +64,7 @@ int main()
 
 		/* create file name correspoding the above position */
 		file_name = (char*)malloc(30 * sizeof(char));
-		strcpy(file_name, "textart");
-		temp[0] = (char)(random_pos + 48);
-		temp[1] = '\0';
-		strcat(file_name, temp);
+		snprintf(file_name, 30, "%s%d", "textart", random_pos);
 
 		// get appropriate file to print to console
 		system("clear");
@@ -65,7 +74,7 @@ int main()
 		printf("%s", buff);
 
 		printf("\n%d\n", counter);
-
+		printf("%d\n", 60 - (int)difftime(time(NULL), begin_time));
 
 		// update current position of evil
 		evil_pos = random_pos + 48;
