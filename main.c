@@ -7,6 +7,9 @@
 
 #include "thread_get_key.h"
 
+void sleep_based_level(int level);
+
+
 int dead_time = 1;
 char evil_pos;
 int counter = 0;
@@ -15,15 +18,14 @@ int main()
 	int map[10], random_pos;
 	char *file_name, *buff;
 	FILE *fp;
-	time_t begin_time;
-	// double elapsed_time;
+	int level = 1;
 
 	/* create new thread to get key typed by player */
 	pthread_t keyboard;
 	pthread_create(&keyboard, NULL, thread_keyboard, NULL);
 
 	/* starting timer */
-	begin_time = time(NULL);
+	time_t begin_time = time(NULL);
 
 	while(1)
 	{
@@ -83,14 +85,30 @@ int main()
 		fclose(fp);
 
 		// time of sleep based on scores that player achieved
-		if(counter < 5)
-			usleep(2000000);
-		else if(counter < 10)
-			usleep(1500000);
-		else if(counter < 20)
-			usleep(1000000);
-		else
-			usleep(500000);
+		if(counter == 5 && level < 2)
+			level = 2;
+		else if(counter == 10 && level < 3)
+			level = 3;
+		else if(counter == 20 && level < 4)
+			level = 4;
+
+		sleep_based_level(level);
 	}
 	return 0;
 }
+
+void sleep_based_level(int level)
+{
+	switch(level)
+	{
+		case 1: usleep(2000000);
+				break;
+		case 2: usleep(1500000);
+				break;
+		case 3: usleep(1000000);
+				break;
+		case 4: usleep(500000);
+				break;
+	}
+}
+
