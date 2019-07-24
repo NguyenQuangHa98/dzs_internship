@@ -1,6 +1,11 @@
+#ifndef THREAD_GET_KEY_H
+#define THREAD_GET_KEY_H
+
 #include <stdio.h>
-#include <termios.h>    //termios, TCSANOW, ECHO, ICANON
-#include <unistd.h>     //STDIN_FILENO
 #include <pthread.h>
+#include "thread_compare.h"
+#include "variable_get_char.h"
 
 void *thread_keyboard(void *arg);
+
+#endif

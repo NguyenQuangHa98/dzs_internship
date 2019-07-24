@@ -3,22 +3,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 #include <pthread.h>
+
 
 #include "thread_get_key.h"
 
-void sleep_based_level(int level);
-
+void render_map(char *file_name);
+void stop_and_check(int level, int random_pos, int score_temp, time_t begin_time);
 
 int dead_time = 1;
-
-char evil_pos;
+char evil_pos = 0;
 int counter = 0;
 int main()
 {
-	int map[10], random_pos;
-	char *file_name, *buff;
-	FILE *fp;
+	int random_pos, score_temp;
+	char *file_name;
 	int level = 1;
 
 	/* create new thread to get key typed by player */
@@ -29,87 +29,97 @@ int main()
 	time_t begin_time = time(NULL);
 
 	while(1)
-	{
+	{	
+		/* reset evil position */
+		evil_pos = 0;
+
+		/* print 9 empty boxes, player's score and time left */
+		render_map("textart");
+		printf("\n%d\n", counter);
+		printf("%d\n", 60 - (int)difftime(time(NULL), begin_time));
+
+		sleep(1);
+
 		/* calculate elapsed time */
-		// elapsed_time = difftime(time(NULL), begin_time);
 		if(difftime(time(NULL), begin_time) >= 60)
-		{
+		{	
 			// print something...
 			dead_time = 0;
 			pthread_exit(NULL);
 		}
-		
-		/* print 9 empty boxes */
-		system("clear");
-		evil_pos = 0;
-
-		buff = (char*)malloc(1000000 * sizeof(char));
-		fp = fopen("textart", "r");
-		fread(buff, 1, 1000000, fp);
-		printf("%s", buff);
-
-		printf("\n%d\n", counter);
-		printf("%d\n", 60 - (int)difftime(time(NULL), begin_time));
-
-		free(buff);
-		fclose(fp);	
-
-		sleep(1);
 
 		/* print 1 evil and 8 empty boxes */
 
 		/* randomize a position of evil */
-		memset(map, 0, sizeof(map));
-		srand(time(0));
+		srand(time(NULL));
 		random_pos = (rand() % 9) + 1;
-		map[random_pos] = 1;
 
 		/* create file name correspoding the above position */
 		file_name = (char*)malloc(30 * sizeof(char));
 		snprintf(file_name, 30, "%s%d", "textart", random_pos);
 
-		// get appropriate file to print to console
-		system("clear");
-		buff = (char*)malloc(1000000 * sizeof(char));
-		fp = fopen(file_name, "r");
-		fread(buff, 1, 1000000, fp);
-		printf("%s", buff);
+		/* get current score to check if it increase or not */
+		score_temp = counter;
 
+		/* get appropriate file and render to console*/
+		render_map(file_name);
+		free(file_name);
 		printf("\n%d\n", counter);
 		printf("%d\n", 60 - (int)difftime(time(NULL), begin_time));
 
-		// update current position of evil
+		/* update current position of evil */
 		evil_pos = random_pos + 48;
 
-		free(file_name);
-		free(buff);
-		fclose(fp);
-
-		// time of sleep based on scores that player achieved
-		if(counter == 5 && level < 2)
+		/* update level based on scores that player achieved */
+		if(counter >= 5 && counter < 15 && level < 2)
 			level = 2;
-		else if(counter == 10 && level < 3)
+		else if(counter >= 15 && level < 3)
 			level = 3;
-		else if(counter == 20 && level < 4)
-			level = 4;
-
-		sleep_based_level(level);
+		
+		//sleep_based_level(level);
+		stop_and_check(level, random_pos, score_temp, begin_time);
 	}
 	return 0;
 }
 
-void sleep_based_level(int level)
+void render_map(char *file_name)
 {
-	switch(level)
-	{
-		case 1: usleep(2000000);
-				break;
-		case 2: usleep(1500000);
-				break;
-		case 3: usleep(1000000);
-				break;
-		case 4: usleep(500000);
-				break;
-	}
+		FILE *fp;
+		char *buff = (char*)malloc(1000000 * sizeof(char));
+
+		system("clear");
+
+		buff = (char*)malloc(1000000 * sizeof(char));
+		fp = fopen(file_name, "r");
+		fread(buff, 1, 1000000, fp);
+		printf("%s", buff);
+		
+		free(buff);
+		fclose(fp);
 }
 
+void stop_and_check(int level, int random_pos, int score_temp, time_t begin_time)
+{
+	char file_name[30];
+	static int level_time[3] = {1500000, 1000000, 500000};
+	struct timeval start, current;
+	gettimeofday(&start, NULL);
+
+	while(1)
+	{
+		gettimeofday(&current, NULL);
+		if(current.tv_sec * 1000000 + current.tv_usec >= start.tv_sec * 1000000 + start.tv_usec + level_time[level - 1])
+			break;
+		if(counter > score_temp)
+		{
+			score_temp = counter;
+			/* create file name */
+			snprintf(file_name, 30, "%s%d", "textart_heart", random_pos);
+			/* render map to screen */
+			render_map(file_name);
+			/* print score and time left to screen */
+			printf("\n%d\n", counter);
+			printf("%d\n", 60 - (int)difftime(time(NULL), begin_time));
+		}
+	}
+}
