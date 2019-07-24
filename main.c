@@ -8,6 +8,8 @@
 
 
 #include "thread_get_key.h"
+#include "thread_compare.h"
+#include "variable_get_char.h"
 
 void render_map(char *file_name);
 void stop_and_check(int level, int random_pos, int score_temp, time_t begin_time);
