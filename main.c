@@ -11,6 +11,7 @@ void sleep_based_level(int level);
 
 
 int dead_time = 1;
+
 char evil_pos;
 int counter = 0;
 int main()
