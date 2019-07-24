@@ -22,7 +22,8 @@ void *thread_compare(void *arg)
 }
 
 void function_compare(char from_key,char from_view )
-{	
+{
+	if( 0 == from_view) return;
 	if(from_key == from_view)  counter++;
 	else 	if(counter > 0) counter--;
 } 
