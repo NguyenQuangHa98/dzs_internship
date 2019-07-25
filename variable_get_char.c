@@ -67,8 +67,8 @@ void VGC_set_var(VAR_GET_C *p_var,char c)
 	pthread_mutex_lock(&p_var->c_mutex);
 	p_var-> c_get = c;
 	//printf("%c-%d",c,p_var);
-	pthread_cond_signal(&p_var->c_cond);
 	pthread_mutex_unlock(&p_var->c_mutex);
+	pthread_cond_signal(&p_var->c_cond);
 }
 
 char VGC_get_var(VAR_GET_C *p_var)
