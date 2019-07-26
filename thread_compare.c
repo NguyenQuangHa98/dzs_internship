@@ -18,7 +18,7 @@ void *thread_compare(void *arg)
 		//printf("\n thread compare %c \n",get_from_key);
 		function_compare(get_from_key,evil_pos);
 	}
-	return NULL;
+	
 }
 
 void function_compare(char from_key,char from_view )

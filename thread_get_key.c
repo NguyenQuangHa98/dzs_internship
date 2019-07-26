@@ -30,6 +30,6 @@ void *thread_keyboard(void *arg)
     /*tcsetattr( STDIN_FILENO, TCSANOW, &oldt);*/
 	pthread_cancel(thread_id);
 	VGC_restore_init();
-
+	//printf("adc\n");
 	return NULL;
 }
