@@ -1,5 +1,11 @@
 #include <stdio.h>
 
+void *play_bg_sound();
+void *play_detection_sound();
+
+
+
+/*
 const char *textart_empty_box = ""
 " _____________________________\n"
 "|                             |\n"
@@ -35,3 +41,5 @@ const char *textart_devil = ""
 void get_cur_pos(int *x, int *y);
 void set_cur_pos(int x, int y);
 void coord_print(const char *str, int x, int y);
+*/
+

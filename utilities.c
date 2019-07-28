@@ -3,7 +3,34 @@
 #include <termios.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <pthread.h>
 
+extern int counter;
+extern int dead_time;
+void *play_bg_sound()
+{
+	system("mpg321 ultimate-power1m.mp3 >/dev/null 2>&1");
+	pthread_exit(NULL);
+}
+
+void *play_detection_sound()
+{
+	int old_score = counter;
+	while(0 != dead_time)
+	{
+		if(counter != old_score)
+		{	
+			if(counter > old_score)	
+				system("aplay ting.wav >/dev/null 2>&1 &");
+			old_score = counter;
+		}
+	}
+	pthread_exit(NULL);
+}
+
+
+
+/*
 void set_cur_pos(int x, int y);
 void get_cur_pos(int *x, int *y);
 void coord_print(const char *str, int x, int y);
@@ -74,3 +101,6 @@ void coord_print(const char *str, int x, int y)
 		i++; x++;
 	}
 }
+*/
+
+

@@ -6,9 +6,17 @@
 #include <sys/time.h>
 #include <pthread.h>
 
+#include "utilities.h"
 #include "thread_get_key.h"
 #include "thread_compare.h"
 #include "variable_get_char.h"
+
+#define FILE_NAME_SIZE 30
+#define LV1_MAX_SCORE 5
+#define LV2_MAX_SCORE 15
+#define LV1_UTIME 1500000
+#define LV2_UTIME 1000000
+#define LV3_UTIME 500000
 
 int dead_time = 1;
 char evil_pos = 0;
@@ -26,8 +34,10 @@ int main()
 	time_t begin_time, elapsed_time;
 
 	/* create new thread to get key typed by player */
-	pthread_t keyboard;
+	pthread_t keyboard, sound_thread, detection_sound_thread;
 	pthread_create(&keyboard, NULL, thread_keyboard, NULL);
+	pthread_create(&sound_thread, NULL, play_bg_sound, NULL);
+	pthread_create(&detection_sound_thread, NULL, play_detection_sound, NULL);
 
 	/* starting timer */
 	begin_time = time(NULL);
@@ -55,8 +65,25 @@ int main()
 				print_info(begin_time);
 			}
 
-			/* print result (or record) */
-			printf("Timeout! Your scores: %d\n", counter);
+			/* print final score and new record (if any) */
+			printf("Timeout! Your final scores: %d\n", counter);
+
+			int record;
+			char record_str[3];
+			FILE *rc_fp = fopen("record.txt", "r");
+			fgets(record_str, sizeof(record_str), rc_fp);
+			record = atoi(record_str);
+			if(counter > record)
+			{
+				fclose(rc_fp);
+				rc_fp = fopen("record.txt", "w");
+				printf("Congratulations!!! You made a new record!!!\n");
+				snprintf(record_str, sizeof(record_str), "%d", counter);
+				fputs(record_str, rc_fp);
+			}
+			else
+				printf("Try harder to break the current record (%d)\n", record);
+			fclose(rc_fp);
 
 			dead_time = 0;
 			pthread_join(keyboard, NULL);
@@ -70,8 +97,8 @@ int main()
 		random_pos = (rand() % 9) + 1;
 
 		/* create file name correspoding the above position */
-		file_name = (char*)malloc(30 * sizeof(char));
-		snprintf(file_name, 30, "%s%d", "textart", random_pos);
+		file_name = (char*)malloc(FILE_NAME_SIZE * sizeof(char));
+		snprintf(file_name, FILE_NAME_SIZE, "%s%d", "textart", random_pos);
 
 		/* get current score to check if then it increase or not */
 		score_temp = counter;
@@ -87,12 +114,10 @@ int main()
 		evil_pos = random_pos + 48;
 
 		/* update level based on scores that player achieved */
-		if(counter >= 5 && counter < 15 && level < 2)
+		if(counter >= LV1_MAX_SCORE && counter < LV2_MAX_SCORE && level < 2)
 			level = 2;
-		else if(counter >= 15 && counter < 25 && level < 3)
+		else if(counter >= LV2_MAX_SCORE && level < 3)
 			level = 3;
-		else if(counter >= 25 && level < 4)
-			level = 4;
 
 		/* wait for tapping from player and check that input */
 		wait_and_check(level, random_pos, score_temp, begin_time);
@@ -118,8 +143,8 @@ void render_map(char *file_name)
 
 void wait_and_check(int level, int random_pos, int score_temp, time_t begin_time)
 {
-	char file_name[30];
-	static int level_time[4] = {1500000, 1000000, 500000, 300000};
+	char file_name[FILE_NAME_SIZE];
+	int level_time[3] = {LV1_UTIME, LV2_UTIME, LV3_UTIME};
 	struct timeval start, current;
 	gettimeofday(&start, NULL);
 
@@ -129,15 +154,18 @@ void wait_and_check(int level, int random_pos, int score_temp, time_t begin_time
 		if(current.tv_sec * 1000000 + current.tv_usec >= start.tv_sec * 1000000 + start.tv_usec + level_time[level - 1])
 			break;
 
-		if(counter > score_temp)
+		if(counter != score_temp)
 		{
+			if(counter > score_temp)
+			{
+				/* create file name */
+				snprintf(file_name, FILE_NAME_SIZE, "%s%d", "textart_heart", random_pos);
+				/* render map to screen */
+				render_map(file_name);
+				/* print score and time left to screen */
+				print_info(begin_time);
+			}
 			score_temp = counter;
-			/* create file name */
-			snprintf(file_name, 30, "%s%d", "textart_heart", random_pos);
-			/* render map to screen */
-			render_map(file_name);
-			/* print score and time left to screen */
-			print_info(begin_time);
 		}
 	}
 }
