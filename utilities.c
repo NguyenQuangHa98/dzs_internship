@@ -6,7 +6,7 @@
 #include <pthread.h>
 
 extern int counter;
-extern int dead_time;
+///extern int dead_time;
 void *play_bg_sound()
 {
 	system("mpg321 ultimate-power1m.mp3 >/dev/null 2>&1");
@@ -16,7 +16,7 @@ void *play_bg_sound()
 void *play_detection_sound()
 {
 	int old_score = counter;
-	while(0 != dead_time)
+	while(1)
 	{
 		if(counter != old_score)
 		{	

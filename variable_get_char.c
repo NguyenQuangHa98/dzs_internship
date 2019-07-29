@@ -21,6 +21,7 @@ void VGC_init()
     /*Those new settings will be set to STDIN
     TCSANOW tells tcsetattr to change attributes immediately. */
     tcsetattr( STDIN_FILENO, TCSANOW, &newt);
+
 }
 
 void VGC_restore_init()

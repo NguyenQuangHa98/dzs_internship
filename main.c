@@ -10,6 +10,7 @@
 #include "thread_get_key.h"
 #include "thread_compare.h"
 #include "variable_get_char.h"
+#include "mutex.h"
 
 #define FILE_NAME_SIZE 30
 #define LV1_MAX_SCORE 5
@@ -18,7 +19,7 @@
 #define LV2_UTIME 1000000
 #define LV3_UTIME 500000
 
-int dead_time = 1;
+//int dead_time = 1;
 char evil_pos = 0;
 int counter = 0;
 
@@ -45,7 +46,7 @@ int main()
 	while(1)
 	{	
 		/* reset evil position */
-		evil_pos = 0;
+		M_set_evil(0);
 
 		/* print 9 empty boxes, player's score and time left */
 		render_map("textart");
@@ -66,27 +67,27 @@ int main()
 			}
 
 			/* print final score and new record (if any) */
-			printf("Timeout! Your final scores: %d\n", counter);
+			printf("Timeout! Your final scores: %d\n", M_get_count());
 
 			int record;
 			char record_str[3];
 			FILE *rc_fp = fopen("record.txt", "r");
 			fgets(record_str, sizeof(record_str), rc_fp);
 			record = atoi(record_str);
-			if(counter > record)
+			if(M_get_count() > record)
 			{
 				fclose(rc_fp);
 				rc_fp = fopen("record.txt", "w");
 				printf("Congratulations!!! You made a new record!!!\n");
-				snprintf(record_str, sizeof(record_str), "%d", counter);
+				snprintf(record_str, sizeof(record_str), "%d", M_get_count());
 				fputs(record_str, rc_fp);
 			}
 			else
 				printf("Try harder to break the current record (%d)\n", record);
 			fclose(rc_fp);
 
-			dead_time = 0;
-			pthread_join(keyboard, NULL);
+			VGC_restore_init();
+			//pthread_join(keyboard, NULL);
 			return 0;
 		}
 
@@ -101,7 +102,7 @@ int main()
 		snprintf(file_name, FILE_NAME_SIZE, "%s%d", "textart", random_pos);
 
 		/* get current score to check if then it increase or not */
-		score_temp = counter;
+		score_temp = M_get_count();
 
 		/* get appropriate file and print to console*/
 		render_map(file_name);
@@ -111,12 +112,12 @@ int main()
 		print_info(begin_time);
 
 		/* update current position of evil */
-		evil_pos = random_pos + 48;
+		M_set_evil(random_pos + 48);
 
 		/* update level based on scores that player achieved */
-		if(counter >= LV1_MAX_SCORE && counter < LV2_MAX_SCORE && level < 2)
+		if(M_get_count() >= LV1_MAX_SCORE && M_get_count() < LV2_MAX_SCORE && level < 2)
 			level = 2;
-		else if(counter >= LV2_MAX_SCORE && level < 3)
+		else if(M_get_count() >= LV2_MAX_SCORE && level < 3)
 			level = 3;
 
 		/* wait for tapping from player and check that input */
@@ -154,9 +155,9 @@ void wait_and_check(int level, int random_pos, int score_temp, time_t begin_time
 		if(current.tv_sec * 1000000 + current.tv_usec >= start.tv_sec * 1000000 + start.tv_usec + level_time[level - 1])
 			break;
 
-		if(counter != score_temp)
+		if(M_get_count() != score_temp)
 		{
-			if(counter > score_temp)
+			if(M_get_count() > score_temp)
 			{
 				/* create file name */
 				snprintf(file_name, FILE_NAME_SIZE, "%s%d", "textart_heart", random_pos);
@@ -165,13 +166,13 @@ void wait_and_check(int level, int random_pos, int score_temp, time_t begin_time
 				/* print score and time left to screen */
 				print_info(begin_time);
 			}
-			score_temp = counter;
+			score_temp = M_get_count();
 		}
 	}
 }
 
 void print_info(time_t begin_time)
 {
-	printf("\nScores: %d\n", counter);
+	printf("\nScores: %d\n",M_get_count());
 	printf("Time left: %ld\n", 60 - (time(NULL) - begin_time));
 }

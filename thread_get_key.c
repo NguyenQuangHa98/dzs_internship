@@ -1,7 +1,7 @@
 #include "thread_get_key.h"
 
 static VAR_GET_C *p_get_c = NULL;
-extern int dead_time;
+//extern int dead_time;
 
 void *thread_keyboard(void *arg)
 {   
@@ -20,7 +20,7 @@ void *thread_keyboard(void *arg)
 	}
 
 	/*create the thread to count */
-	while(0 != dead_time)
+	while(1)
 	{
 		get_key = VGC_getchar();	
 		VGC_set_var(p_get_c,get_key);
