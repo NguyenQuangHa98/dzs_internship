@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <pthread.h>
 
-extern int counter;
+//extern int counter;
 ///extern int dead_time;
 void *play_bg_sound()
 {
@@ -15,14 +15,14 @@ void *play_bg_sound()
 
 void *play_detection_sound()
 {
-	int old_score = counter;
+	int old_score = M_get_count();  //counter;
 	while(1)
 	{
-		if(counter != old_score)
+		if(M_get_count() != old_score)
 		{	
-			if(counter > old_score)	
+			if(M_get_count() > old_score)	
 				system("aplay ting.wav >/dev/null 2>&1 &");
-			old_score = counter;
+			old_score = M_get_count();
 		}
 	}
 	pthread_exit(NULL);
